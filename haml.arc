@@ -19,16 +19,22 @@
      (and (asym s)
           (is ((string s) 0) #\@)))
 
-(def attrs-and-children (xs)
+(def attrs-and-children-raw (xs (o result (obj attrs (queue))))
      ; similar to pair, but only pairs when there's an attribute @attr
-     (if (no xs) nil
+     (if xs
        (with (a (car xs) b (cadr xs) rest (cddr xs))
          (if (is-attr a) 
-                 (cons (list a b) (attrs-and-children rest))
-             (list xs)))))
+             (do (enq (list a b) result!attrs)
+                 (attrs-and-children-raw rest result))
+             (= result!children xs))))
+     result)
 
+(def attrs-and-children (xs)
+     (let res (attrs-and-children-raw xs)
+       (= res!attrs (qlist res!attrs))
+       res))
+
+(prn (attrs-and-children '(@id "home" @class "user")))
 (prn (attrs-and-children '(@id "home" @class "user" "content" "content" "content")))
 
-
-
-(auto-reload "haml.arc")
+(thread:auto-reload "haml.arc")
