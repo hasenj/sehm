@@ -75,4 +75,10 @@
 
 (prn-tag-object template)
 
+(def ntag (name . args)
+     (let res (attrs-and-children args)
+       (tag-object name res!attrs res!children)))
+
+(prn-tag-object (ntag "span" '@id "menu" '@class "golden" "This is my new span!!!!" "Stay away from it!!"))
+
 
