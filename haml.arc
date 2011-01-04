@@ -95,6 +95,8 @@
 
 (prn-tag-object template)
 
+(prn "span is: " span)
+
 ; define basic tags as functions like this:
 ; (def div args (tag "div" args))
 (each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
@@ -112,3 +114,17 @@
       (h1 "Main section")
       (p "First paragraph")))))
 
+(mac deftag (name . body)
+    `(def ,name args 
+       (let res (attrs-and-children args)
+        (with (attrs res!attrs children res!children)
+              ,@body))))
+
+(deftag items
+      (e "ul" 
+         (map [e "il" _] children)))
+
+(prn "---------")
+(prn "deftag demo")
+(prn-tag-object
+  (items "item1" "item2"))
