@@ -73,13 +73,17 @@
 
 (prn-tag-object template)
 
-(def ntag (name . args)
+(def ntag (name args)
      (let res (attrs-and-children args)
        (tag-object name res!attrs res!children)))
 
-(= e ntag) ; alias, e means element
+(def element (name . args)
+     (ntag name args))
 
-(prn-tag-object (ntag "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
+; convenience
+(= e element)
+
+(prn-tag-object (e "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
 
 (= template
    (e "span" 'id "main"
@@ -90,3 +94,21 @@
       (e "div" "Regular div" "With stuff inside it")))
 
 (prn-tag-object template)
+
+; define basic tags as functions like this:
+; (def div args (ntag "div" args))
+(each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
+  (let tagsym (sym tagname)
+    (eval `(def ,tagsym args (ntag ,tagname args)))))
+
+(prn-tag-object (div (span "Hello")))
+
+(prn "-------------")
+(prn-tag-object
+ (html
+  (head (title "Hello world"))
+  (body 
+    (div 'id "content"
+      (h1 "Main section")
+      (p "First paragraph")))))
+
