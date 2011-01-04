@@ -73,12 +73,12 @@
 
 (prn-tag-object template)
 
-(def ntag (name args)
+(def tag (name args)
      (let res (attrs-and-children args)
        (tag-object name res!attrs res!children)))
 
 (def element (name . args)
-     (ntag name args))
+     (tag name args))
 
 ; convenience
 (= e element)
@@ -96,10 +96,10 @@
 (prn-tag-object template)
 
 ; define basic tags as functions like this:
-; (def div args (ntag "div" args))
+; (def div args (tag "div" args))
 (each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
   (let tagsym (sym tagname)
-    (eval `(def ,tagsym args (ntag ,tagname args)))))
+    (eval `(def ,tagsym args (tag ,tagname args)))))
 
 (prn-tag-object (div (span "Hello")))
 
