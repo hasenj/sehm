@@ -2,47 +2,45 @@
 
 ; html tree nodes have attributes attached to them, to smilate that:
 ;
-; (node-name @attr value @attr value child-node child-node child-node)
+; (node-name 'attr value 'attr value child-node child-node child-node)
 ;
 ; For example:
 ;
-;   (div @id "main" (span "text"))
+;   (div 'id "main" (span "text"))
 ; 
 ; A child node could be plain text or another html node
 ; attribute values are mostly strings
+;
+; Attributed are designated by symbols, the rest is child noes
 
-; a symbols is an attribute if it starts with @
 
 (load "lib/util.arc")
 
-(def is-attr (s)
-     (and (asym s)
-          (is ((string s) 0) #\@)))
+(= is-attr asym)
 
-(def attrs-and-children-raw (xs (o result (obj attrs (queue))))
-     ; similar to pair, but only pairs when there's an attribute @attr
+(def attrs-and-children-plumbing (xs (o result (obj attrs (queue))))
      (if xs
        (with (a (car xs) b (cadr xs) rest (cddr xs))
          (if (is-attr a) 
              (do (enq (list a b) result!attrs)
-                 (attrs-and-children-raw rest result))
+                 (attrs-and-children-plumbing rest result))
              (= result!children xs))))
      result)
 
 (def attrs-and-children (xs)
-     (let res (attrs-and-children-raw xs)
+     (let res (attrs-and-children-plumbing xs)
        (= res!attrs (qlist res!attrs))
        res))
 
-(prn (attrs-and-children '(@id "home" @class "user")))
-(prn (attrs-and-children '(@id "home" @class "user" "content" "content" "content")))
+(prn (attrs-and-children '(id "home" class "user")))
+(prn (attrs-and-children '(id "home" class "user" "content" "content" "content")))
 
 (thread:auto-reload "haml.arc")
 
 (def tag-object (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
 
-(= template (tag-object "div" (tablist:obj @id "main") "content"))
+(= template (tag-object "div" (tablist:obj id "main") "content"))
 
 (prn "The tag name: " ((rep template) 'name))
 (prn "The tag attrs: " ((rep template) 'attrs))
@@ -61,7 +59,7 @@
      ; assumes attrs is an alist
      (each attr attrs
         (with 
-          (key (trim (string (attr 0)) 'front #\@)
+          (key (string (attr 0))
            val (string "\"" (attr 1) "\""))
            (pr " " key "=" val ""))))
 
@@ -79,6 +77,17 @@
      (let res (attrs-and-children args)
        (tag-object name res!attrs res!children)))
 
-(prn-tag-object (ntag "span" '@id "menu" '@class "golden" "This is my new span!!!!" "Stay away from it!!"))
+(= e ntag) ; alias, e means element
+
+(prn-tag-object (ntag "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
+
+(= template
+   (e 'span 'id "main"
+      (e 'div 'id "menu"
+         (e 'il 'class "item" "Item1")
+         (e 'il 'class "item" "Item2")
+         (e 'il 'class "item" "Item3"))))
+
+(prn-tag-object template)
 
 
