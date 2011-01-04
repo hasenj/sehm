@@ -22,7 +22,7 @@
      (if xs
        (with (a (car xs) b (cadr xs) rest (cddr xs))
          (if (is-attr a) 
-             (do (enq (list a b) result!attrs)
+             (do (if b (enq (list a b) result!attrs))
                  (attrs-and-children-plumbing rest result))
              (= result!children xs))))
      result)
@@ -85,6 +85,11 @@
 
 (prn-tag-object (e "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
 
+(def alpop (x attr)
+     "pop an element from an alist"
+     (do1 (alref x attr)
+          (pull [is (car _) attr] x)))
+
 (= template
    (e "span" 'id "main"
       (e "ul" 'id "menu"
@@ -115,16 +120,25 @@
       (p "First paragraph")))))
 
 (mac deftag (name . body)
+     "deftag allows you to define a tag-like function, arguments are implicit
+     and defines the following variables:
+     'attrs: attributes extracted from arguments
+     'children: child nodes, extracted from arguments
+     'attr: a function to get an attirubte from 'attrs
+     'popattr: returns an attribute and removes it from attrs"
     `(def ,name args 
        (let res (attrs-and-children args)
         (with (attrs res!attrs children res!children)
-              ,@body))))
+          (with (popattr [alpop attrs _] attr [alref attrs _])
+              ,@body)))))
 
 (deftag items
-      (e "ul" 
-         (map [e "il" _] children)))
+      (e "ul" 'class attr!class
+        (map [e "il" 'class attr!itemclass _] children)))
+
 
 (prn "---------")
 (prn "deftag demo")
-(prn-tag-object
-  (items "item1" "item2"))
+(prn-tag-object (items 'class "list" 'itemclass "item" 
+                       "item1" "item2"))
+(prn-tag-object (items "item1" "item2"))
