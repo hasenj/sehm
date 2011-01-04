@@ -1,6 +1,6 @@
 ; This is not a haml clone
 
-; html tree nodes have attributes attached to them, to smilate that:
+; html tree nodes have attributes attached to them, to simulate that:
 ;
 ; (node-name 'attr value 'attr value child-node child-node child-node)
 ;
@@ -35,8 +35,6 @@
 (prn (attrs-and-children '(id "home" class "user")))
 (prn (attrs-and-children '(id "home" class "user" "content" "content" "content")))
 
-(thread:auto-reload "haml.arc")
-
 (def tag-object (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
 
@@ -48,12 +46,14 @@
 
 (def atag (x) (is (type x) 'tag))
 
-(def prn-nodes-helper (nodes)
-     (if (no nodes)         nill
-         (astring nodes)   (prn nodes)
-         (atag nodes)      (prn-tag-object nodes)
-         (acons nodes)     (each child nodes (prn-nodes-helper child))
-             (prn nodes)))
+(def indent-space (level)
+     (string:n-of (* 2 level) " "))
+
+(def prn-nodes-helper (x (o indent-level 0))
+     (if (no x)         nill
+         (atag x)      (prn-tag-object x indent-level)
+         (acons x)     (each child x (prn-nodes-helper child indent-level))
+         (prn (indent-space indent-level) x)))
 
 (def pr-attrs (attrs)
      ; assumes attrs is an alist
@@ -63,13 +63,13 @@
            val (string "\"" (attr 1) "\""))
            (pr " " key "=" val ""))))
 
-(def prn-tag-object (ttag)
+(def prn-tag-object (ttag (o indent-level 0))
      (let e (rep ttag)
-       (pr "<" e!name)
+       (pr (indent-space indent-level) "<" e!name)
        (pr-attrs e!attrs)
        (if (and (no e!children) e!selfclose) (prn "/>") (prn ">"))
-       (prn-nodes-helper e!children)
-       (prn "</" e!name ">")))
+       (prn-nodes-helper e!children (+ 1 indent-level))
+       (prn (indent-space indent-level) "</" e!name ">")))
 
 (prn-tag-object template)
 
@@ -82,12 +82,11 @@
 (prn-tag-object (ntag "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
 
 (= template
-   (e 'span 'id "main"
-      (e 'div 'id "menu"
-         (e 'il 'class "item" "Item1")
-         (e 'il 'class "item" "Item2")
-         (e 'il 'class "item" "Item3"))))
+   (e "span" 'id "main"
+      (e "ul" 'id "menu"
+         (e "li" 'class "item" "Item1")
+         (e "li" 'class "item" "Item2")
+         (e "li" 'class "item" "Item3"))
+      (e "div" "Regular div" "With stuff inside it")))
 
 (prn-tag-object template)
-
-
