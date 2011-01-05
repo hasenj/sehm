@@ -35,10 +35,10 @@
 (prn (attrs-and-children '(id "home" class "user")))
 (prn (attrs-and-children '(id "home" class "user" "content" "content" "content")))
 
-(def tag-object (name attrs children)
+(def build-tag (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
 
-(= template (tag-object "div" (tablist:obj id "main") "content"))
+(= template (build-tag "div" (tablist:obj id "main") "content"))
 
 (prn "The tag name: " ((rep template) 'name))
 (prn "The tag attrs: " ((rep template) 'attrs))
@@ -50,7 +50,7 @@
      (string:n-of (* 2 level) " "))
 
 (def prn-nodes-helper (x (o indent-level 0))
-     (if (no x)         nill
+     (if (no x)         nil
          (atag x)      (prn-tag-object x indent-level)
          (acons x)     (each child x (prn-nodes-helper child indent-level))
          (prn (indent-space indent-level) x)))
@@ -75,7 +75,7 @@
 
 (def tag (name args)
      (let res (attrs-and-children args)
-       (tag-object name res!attrs res!children)))
+       (build-tag name res!attrs res!children)))
 
 (def element (name . args)
      (tag name args))
@@ -108,6 +108,9 @@
   (let tagsym (sym tagname)
     (eval `(def ,tagsym args (tag ,tagname args)))))
 
+(def render-html args
+     (prn-nodes-helper args))
+
 (prn-tag-object (div (span "Hello")))
 
 (prn "-------------")
@@ -136,9 +139,30 @@
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
 
-
 (prn "---------")
 (prn "deftag demo")
 (prn-tag-object (items 'class "list" 'itemclass "item" 
                        "item1" "item2"))
 (prn-tag-object (items "item1" "item2"))
+
+(deftag jscript
+        "takes a list of js files and creates tags to include them"
+        (map [e "script" 'type "text/javascript" 'src _] (flat children)))
+
+(deftag csslink
+        "takes a list of css files and creates tags to include them"
+        (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] (flat children)))
+
+(deftag page
+    (html
+      (head (title attr!title)
+            (jscript attr!js)
+            (csslink attr!css))
+      (body children)))
+
+(render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
+
+(deftag blogpage
+        (page 'title "Blog post" 'js "blog.js" (div 'class "blogpost" children)))
+
+(render-html (blogpage "This is my post"))
