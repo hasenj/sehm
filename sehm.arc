@@ -117,13 +117,13 @@
                        "item1" "item2"))
 (render-html (items "item1" "item2"))
 
-(deftag jscript
+(def jscript args
         "takes a list of js files and creates tags to include them"
-        (map [e "script" 'type "text/javascript" 'src _] (flat children)))
+        (map [e "script" 'type "text/javascript" 'src _] (flat args)))
 
-(deftag csslink
+(def csslink args
         "takes a list of css files and creates tags to include them"
-        (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] (flat children)))
+        (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] (flat args)))
 
 (deftag page
     (html
