@@ -1,6 +1,9 @@
-sehm: [s]-[e]xpression based [h]tml [m]arkup for arc
+## Sehm
+
+sehm: *s*-*e*xpression based *h*tml *m*arkup for arc
 
 Also: Arabic for:
+
 * Arrow
 * A unit of shares
 
