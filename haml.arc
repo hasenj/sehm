@@ -16,8 +16,6 @@
 
 (load "lib/util.arc")
 
-(= is-attr asym)
-
 (def attrs-and-children (xs)
      "Parse xs into two lists: an alist of attributes, 
      and the remainder of the list of child nodes"
@@ -29,28 +27,13 @@
                  (= children (drain (pop xs))))))
          (obj attrs (qlist attrs) children children)))
 
-(prn (attrs-and-children '(id "home" class "user")))
-(prn (attrs-and-children '(id "home" class "user" "content" "content" "content")))
-
 (def build-tag (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
-
-(= template (build-tag "div" (tablist:obj id "main") "content"))
-
-(prn "The tag name: " ((rep template) 'name))
-(prn "The tag attrs: " ((rep template) 'attrs))
-(prn "The tag childs: " ((rep template) 'children))
 
 (def atag (x) (is (type x) 'tag))
 
 (def indent-space (level)
      (string:n-of (* 2 level) " "))
-
-(def prn-nodes-helper (x (o indent-level 0))
-     (if (no x)         nil
-         (atag x)      (prn-tag-object x indent-level)
-         (acons x)     (each child x (prn-nodes-helper child indent-level))
-         (prn (indent-space indent-level) x)))
 
 (def pr-attrs (attrs)
      ; assumes attrs is an alist
@@ -65,10 +48,17 @@
        (pr (indent-space indent-level) "<" e!name)
        (pr-attrs e!attrs)
        (if (and (no e!children) e!selfclose) (pr "/>") (pr ">"))
-       (aif e!children (do (prn) (prn-nodes-helper it (+ 1 indent-level)) (pr (indent-space indent-level))))
+       (aif e!children 
+           (do (prn) 
+             (prn-nodes-helper it (+ 1 indent-level))
+             (pr (indent-space indent-level))))
        (prn "</" e!name ">")))
 
-(prn-tag-object template)
+(def prn-nodes-helper (x (o indent-level 0))
+     (if (no x)         nil
+         (atag x)      (prn-tag-object x indent-level)
+         (acons x)     (each child x (prn-nodes-helper child indent-level))
+         (prn (indent-space indent-level) x)))
 
 (def tag (name args)
      (let res (attrs-and-children args)
@@ -80,24 +70,10 @@
 ; convenience
 (= e element)
 
-(prn-tag-object (e "span" 'id "menu" 'class "golden" "This is my new span!!!!" "Stay away from it!!"))
-
 (def alpop (x attr)
      "pop an element from an alist"
      (do1 (alref x attr)
           (pull [is (car _) attr] x)))
-
-(= template
-   (e "span" 'id "main"
-      (e "ul" 'id "menu"
-         (e "li" 'class "item" "Item1")
-         (e "li" 'class "item" "Item2")
-         (e "li" 'class "item" "Item3"))
-      (e "div" "Regular div" "With stuff inside it")))
-
-(prn-tag-object template)
-
-(prn "span is: " span)
 
 ; define basic tags as functions like this:
 ; (def div args (tag "div" args))
@@ -106,12 +82,24 @@
     (eval `(def ,tagsym args (tag ,tagname args)))))
 
 (def render-html args
+     "Use this to render your tag structure into html"
      (prn-nodes-helper args))
 
-(prn-tag-object (div (span "Hello")))
+(mac deftag (name . body)
+     "deftag allows you to define a custom tag (in reality it's just a function)
+     Whatever arguments passed to this function get parsed into attributes and children
+     The following variables are automagically defined
+     'attrs: attributes extracted from arguments (an alist)
+     'children: child nodes, extracted from arguments
+     'attr: a function to get an attirubte from 'attrs
+     'popattr: like 'attr but removes the attribute from 'attrs"
+    `(def ,name args 
+       (let res (attrs-and-children args)
+        (with (attrs res!attrs children res!children)
+          (with (popattr [alpop attrs _] attr [alref attrs _])
+              ,@body)))))
 
-(prn "-------------")
-(prn-tag-object
+(render-html
  (html
   (head (title "Hello world"))
   (body 
@@ -119,28 +107,15 @@
       (h1 "Main section")
       (p "First paragraph")))))
 
-(mac deftag (name . body)
-     "deftag allows you to define a tag-like function, arguments are implicit
-     and defines the following variables:
-     'attrs: attributes extracted from arguments
-     'children: child nodes, extracted from arguments
-     'attr: a function to get an attirubte from 'attrs
-     'popattr: returns an attribute and removes it from attrs"
-    `(def ,name args 
-       (let res (attrs-and-children args)
-        (with (attrs res!attrs children res!children)
-          (with (popattr [alpop attrs _] attr [alref attrs _])
-              ,@body)))))
-
+(prn "---------")
+(prn "deftag demo")
 (deftag items
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
 
-(prn "---------")
-(prn "deftag demo")
-(prn-tag-object (items 'class "list" 'itemclass "item" 
+(render-html (items 'class "list" 'itemclass "item" 
                        "item1" "item2"))
-(prn-tag-object (items "item1" "item2"))
+(render-html (items "item1" "item2"))
 
 (deftag jscript
         "takes a list of js files and creates tags to include them"
