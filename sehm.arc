@@ -1,5 +1,5 @@
-; This is not a haml clone
-
+; sehm: s-expression html markup
+;
 ; html tree nodes have attributes attached to them, to simulate that:
 ;
 ; (node-name 'attr value 'attr value child-node child-node child-node)
@@ -11,7 +11,7 @@
 ; A child node could be plain text or another html node
 ; attribute values are mostly strings
 ;
-; Attributed are designated by symbols, the rest is child noes
+; Attributed are designated by symbols, the rest is child nodes
 
 
 (load "lib/util.arc")
