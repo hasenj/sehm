@@ -18,19 +18,16 @@
 
 (= is-attr asym)
 
-(def attrs-and-children-plumbing (xs (o result (obj attrs (queue))))
-     (if xs
-       (with (a (car xs) b (cadr xs) rest (cddr xs))
-         (if (is-attr a) 
-             (do (if b (enq (list a b) result!attrs))
-                 (attrs-and-children-plumbing rest result))
-             (= result!children xs))))
-     result)
-
 (def attrs-and-children (xs)
-     (let res (attrs-and-children-plumbing xs)
-       (= res!attrs (qlist res!attrs))
-       res))
+     "Parse xs into two lists: an alist of attributes, 
+     and the remainder of the list of child nodes"
+       (with (attrs (queue) children (list))
+         (while xs
+           (with (a (car xs) b (cadr xs))
+             (if (and (asym a) b)
+                 (do (enq (list a b) attrs) (pop xs) (pop xs))
+                 (= children (drain (pop xs))))))
+         (obj attrs (qlist attrs) children children)))
 
 (prn (attrs-and-children '(id "home" class "user")))
 (prn (attrs-and-children '(id "home" class "user" "content" "content" "content")))
@@ -67,9 +64,9 @@
      (let e (rep ttag)
        (pr (indent-space indent-level) "<" e!name)
        (pr-attrs e!attrs)
-       (if (and (no e!children) e!selfclose) (prn "/>") (prn ">"))
-       (prn-nodes-helper e!children (+ 1 indent-level))
-       (prn (indent-space indent-level) "</" e!name ">")))
+       (if (and (no e!children) e!selfclose) (pr "/>") (pr ">"))
+       (aif e!children (do (prn) (prn-nodes-helper it (+ 1 indent-level)) (pr (indent-space indent-level))))
+       (prn "</" e!name ">")))
 
 (prn-tag-object template)
 
@@ -163,6 +160,6 @@
 (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
 
 (deftag blogpage
-        (page 'title "Blog post" 'js "blog.js" (div 'class "blogpost" children)))
+        (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
 
 (render-html (blogpage "This is my post"))
