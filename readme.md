@@ -1,11 +1,6 @@
-## Sehm
+# Sehm
 
-sehm: *s*-*e*xpression based *h*tml *m*arkup for arc
-
-Also: Arabic for:
-
-* Arrow
-* A unit of shares
+sehm: S-Expression based Html Markup, for arc
 
 ## Basics
 
