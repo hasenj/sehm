@@ -21,10 +21,9 @@
      and the remainder of xs as child nodes"
      (with (attrs (queue) children (list))
          (while xs
-            (if (asym (car xs))
-                (with (a (pop xs) b (pop xs))
-                   (if b (enq (list a b) attrs)))
-                (= children (drain (pop xs)))))
+                (if (asym car.xs)
+                    (enq (list pop.xs pop.xs) attrs)
+                    (do (= children xs) (wipe xs))))
          (obj attrs (qlist attrs) children children)))
 
 (def build-tag (name attrs children)
@@ -41,7 +40,7 @@
         (with 
           (key (string (attr 0))
            val (string "\"" (attr 1) "\""))
-           (pr " " key "=" val ""))))
+           (if val (pr " " key "=" val "")))))
 
 (def prn-tag-object (ttag (o indent-level 0))
      (let e (rep ttag)
