@@ -16,15 +16,15 @@
 
 (load "lib/util.arc")
 
-(def attrs-and-children (xs)
+(def parse-attrs-nodes (xs)
      "Parse xs into two lists: an alist of attributes, 
-     and the remainder of the list of child nodes"
-       (with (attrs (queue) children (list))
+     and the remainder of xs as child nodes"
+     (with (attrs (queue) children (list))
          (while xs
-           (with (a (car xs) b (cadr xs))
-             (if (and (asym a) b)
-                 (do (enq (list a b) attrs) (pop xs) (pop xs))
-                 (= children (drain (pop xs))))))
+            (if (asym (car xs))
+                (with (a (pop xs) b (pop xs))
+                   (if b (enq (list a b) attrs)))
+                (= children (drain (pop xs)))))
          (obj attrs (qlist attrs) children children)))
 
 (def build-tag (name attrs children)
@@ -61,7 +61,7 @@
          (prn (indent-space indent-level) x)))
 
 (def tag (name args)
-     (let res (attrs-and-children args)
+     (let res (parse-attrs-nodes args)
        (build-tag name res!attrs res!children)))
 
 (def element (name . args)
@@ -94,7 +94,7 @@
      'attr: a function to get an attirubte from 'attrs
      'popattr: like 'attr but removes the attribute from 'attrs"
     `(def ,name args 
-       (let res (attrs-and-children args)
+       (let res (parse-attrs-nodes args)
         (with (attrs res!attrs children res!children)
           (with (popattr [alpop attrs _] attr [alref attrs _])
               ,@body)))))
@@ -107,8 +107,6 @@
       (h1 "Main section")
       (p "First paragraph")))))
 
-(prn "---------")
-(prn "deftag demo")
 (deftag items
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
@@ -132,9 +130,12 @@
             (csslink attr!css))
       (body children)))
 
+(render-html (page 'title "Sample" "yes"))
 (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
 
 (deftag blogpage
         (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
 
 (render-html (blogpage "This is my post"))
+(render-html (page 'title "Sample" 'js nil "yes"))
+
