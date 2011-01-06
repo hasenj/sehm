@@ -29,15 +29,15 @@ There are no macros involved here. 'div is a function, and the arguments passed 
 
 'div and other tag functions don't return a string. Instead, they return a tag/node object, which is just an annotated hashtable with the following fields:
 
-    name: the tag name, e.g. "div"
-    attrs: an associated list of attributes
-    children: a list of child nodes
+* name: the tag name, e.g. "div"
+* attrs: an associated list of attributes
+* children: a list of child nodes
 
-This object is rendered into a string using 'render-html which outputs the result to stdout. 
+This object is rendered into a string using `render-html` which outputs the result to stdout. 
 
 To capture the output as a string, use `tostring:render-html`
 
-'div and 'span are convenience methods. Not all tags have methods defined in their names. To produce a generic tag, use the 'element function (or 'e for short):
+`div` and `span` are convenience methods. Not all tags have methods defined in their names. To produce a generic tag, use the `element` function (or `e` for short):
 
     (e "div" 'class "myclass" "content" "content")
 
@@ -121,11 +121,9 @@ Custom tags can serve as layout templates.
 
 Here, jscript and csslink are custom tags that produce the html biolerplates necessary to include .js and .css files.
 
-'page is a custom tag that can also be thought of as a layout template. 
+`page` is a custom tag that can also be thought of as a layout template. 
 
-A layout template specified the general structure of a page and puts placeholders for things to be filled out later on. Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
-
-Here's a usage example:
+The point of a template is to specify the general structure of a page, while putting placeholders for things to be filled out later on. Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
 
     arc> (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
     <html>
@@ -144,12 +142,9 @@ Here's a usage example:
     </html>
     nil
 
-Here, 'jscript and 'csslink are custom tags that are defined as regular functions
-
-The 'page template processes 'js and 'css attributes, but it's very nil-tolerant. In this usage example, we didn't pass anything to 'css, and everything still worked as we expected.
+The `page` template processes `js` and `css` attributes, but it's very nil-tolerant. In the above example, we didn't pass anything to `css`, and everything still worked as we expected.
 
 Because a template is nothing more than a custom tag, and because tags are defined in terms of other tags, it follows that we can create templates based on other templates.
-
 
     (deftag blogpage
             (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
