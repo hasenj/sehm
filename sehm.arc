@@ -15,6 +15,7 @@
 
 
 (load "lib/util.arc")
+(wipe tag) ; vanilla html.arc defines this as a macro -- it gets in the way
 
 (def parse-attrs-nodes (xs)
      "Parse xs into two lists: an alist of attributes, 
@@ -37,27 +38,46 @@
 (def pr-attrs (attrs)
      ; assumes attrs is an alist
      (each attr attrs
-        (with 
-          (key (string (attr 0))
-           val (string "\"" (attr 1) "\""))
-           (if val (pr " " key "=" val "")))))
+        (with (key (string (attr 0)) 
+               val (string "\"" (attr 1) "\""))
+           (if (and key val) (pr " " key "=" val)))))
 
-(def prn-tag-object (ttag (o indent-level 0))
-     (let e (rep ttag)
-       (pr (indent-space indent-level) "<" e!name)
-       (pr-attrs e!attrs)
-       (if (and (no e!children) e!selfclose) (pr "/>") (pr ">"))
-       (aif e!children 
-           (do (prn) 
-             (prn-nodes-helper it (+ 1 indent-level))
-             (pr (indent-space indent-level))))
-       (prn "</" e!name ">")))
+(def pr-tag-open (name attrs)
+     (pr "<" name)
+     (pr-attrs attrs)
+     (pr ">"))
 
-(def prn-nodes-helper (x (o indent-level 0))
-     (if (no x)         nil
-         (atag x)      (prn-tag-object x indent-level)
-         (acons x)     (each child x (prn-nodes-helper child indent-level))
-         (prn (indent-space indent-level) x)))
+(def pr-tag-selfclose (name attrs)
+     (pr "<" name)
+     (pr-attrs attrs)
+     (pr " />"))
+
+(def pr-tag-close (name)
+     (pr "</" name ">"))
+
+(def pr-tag-inline (name attrs children)
+     (pr-tag-open name attrs)
+     (pr-nodes children)
+     (pr-tag-close name))
+
+(def pr-node (node)
+     (if (no node) nil
+         (atag node) (pr-tag node)
+         (acons node) (each n (intersperse " " flat.node) (pr-node n))
+         t (pr node)))
+
+
+(def pr-tag-normal (name attrs children)
+       (pr-tag-open name attrs)
+       (aif children (pr-node it))
+       (pr-tag-close name))
+
+(def pr-tag (tag)
+     (let e (rep tag)
+       (let n e!name
+         (if (in n "link" "img" "input") (pr-tag-selfclose e!name e!attrs)
+             (in n "a" "u" "i" "em" "b") (pr-tag-inline e!name e!attrs e!children)
+             t (pr-tag-normal e!name e!attrs e!children)))))
 
 (def tag (name args)
      (let res (parse-attrs-nodes args)
@@ -82,7 +102,9 @@
 
 (def render-html args
      "Use this to render your tag structure into html"
-     (prn-nodes-helper args))
+     (prn "<!doctype html>")
+     (pr-node args)
+     (prn))
 
 (mac deftag (name . body)
      "deftag allows you to define a custom tag (in reality it's just a function)
