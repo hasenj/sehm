@@ -32,8 +32,37 @@
 
 (def atag (x) (is (type x) 'tag))
 
+
+(def tag (name args)
+     (let res (parse-attrs-nodes args)
+       (build-tag name res!attrs res!children)))
+
+(def element (name . args)
+     (tag name args))
+
+; convenience
+(= e element)
+
+(def alpop (x attr)
+     "pop an element from an alist"
+     (do1 (alref x attr)
+          (pull [is (car _) attr] x)))
+
+; define basic tags as functions like this:
+; (def div args (tag "div" args))
+(each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
+  (let tagsym (sym tagname)
+    (eval `(def ,tagsym args (tag ,tagname args)))))
+
 (def indent-space (level)
      (string:n-of (* 2 level) " "))
+
+; global .. ideally should be a thread local
+(= current-indent-level* 0)
+(def indent () (++ current-indent-level*))
+(def outdent () (-- current-indent-level*))
+(def pr-indent () (pr (indent-space current-indent-level*)))
+(def prn-indent () (prn) (pr-indent))
 
 (def pr-attrs (attrs)
      ; assumes attrs is an alist
@@ -57,48 +86,35 @@
 
 (def pr-tag-inline (name attrs children)
      (pr-tag-open name attrs)
-     (pr-nodes children)
+     (pr-node children)
      (pr-tag-close name))
 
 (def pr-node (node)
      (if (no node) nil
          (atag node) (pr-tag node)
-         (acons node) (each n (intersperse " " flat.node) (pr-node n))
+         (acons node) (each n (intersperse " " flat.node) ; flat to remove nils
+                            (pr-node n))
          t (pr node)))
 
 
 (def pr-tag-normal (name attrs children)
        (pr-tag-open name attrs)
-       (aif children (pr-node it))
+       (when children
+         (each it children 
+             (indent)
+             (prn-indent)
+             (pr-node it)
+             (outdent))
+         (prn-indent))
        (pr-tag-close name))
 
 (def pr-tag (tag)
      (let e (rep tag)
-       (let n e!name
+       (let n (string e!name)
          (if (in n "link" "img" "input") (pr-tag-selfclose e!name e!attrs)
-             (in n "a" "u" "i" "em" "b") (pr-tag-inline e!name e!attrs e!children)
+             (in n "a" "u" "i" "em" "b" "p" "title") (pr-tag-inline e!name e!attrs e!children)
              t (pr-tag-normal e!name e!attrs e!children)))))
 
-(def tag (name args)
-     (let res (parse-attrs-nodes args)
-       (build-tag name res!attrs res!children)))
-
-(def element (name . args)
-     (tag name args))
-
-; convenience
-(= e element)
-
-(def alpop (x attr)
-     "pop an element from an alist"
-     (do1 (alref x attr)
-          (pull [is (car _) attr] x)))
-
-; define basic tags as functions like this:
-; (def div args (tag "div" args))
-(each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
-  (let tagsym (sym tagname)
-    (eval `(def ,tagsym args (tag ,tagname args)))))
 
 (def render-html args
      "Use this to render your tag structure into html"
@@ -159,4 +175,7 @@
 
 (render-html (blogpage "This is my post"))
 (render-html (page 'title "Sample" 'js nil "yes"))
-
+(repeat 3 (prn))
+(render-html (page 'title "Test" 'js "js.js" 'css "css.css" 
+                   (e 'a 'href "google.com" "mylink")
+                   (p "Hello world" (e 'em "emhasis!!!") "did you see that?")))
