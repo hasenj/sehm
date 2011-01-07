@@ -92,10 +92,10 @@
 (def pr-node (node)
      (if (no node) nil
          (atag node) (pr-tag node)
-         (acons node) (each n (intersperse " " flat.node) ; flat to remove nils
-                            (pr-node n))
+         (acons node) 
+             (each n (intersperse " " flat.node) ; flat to remove nils
+                   (pr-node n))
          t (pr node)))
-
 
 (def pr-tag-normal (name attrs children)
        (pr-tag-open name attrs)
@@ -136,21 +136,9 @@
           (with (popattr [alpop attrs _] attr [alref attrs _])
               ,@body)))))
 
-(render-html
- (html
-  (head (title "Hello world"))
-  (body 
-    (div 'id "content"
-      (h1 "Main section")
-      (p "First paragraph")))))
-
 (deftag items
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
-
-(render-html (items 'class "list" 'itemclass "item" 
-                       "item1" "item2"))
-(render-html (items "item1" "item2"))
 
 (def jscript args
         "takes a list of js files and creates tags to include them"
@@ -167,15 +155,6 @@
             (csslink attr!css))
       (body children)))
 
-(render-html (page 'title "Sample" "yes"))
-(render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
-
 (deftag blogpage
         (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
 
-(render-html (blogpage "This is my post"))
-(render-html (page 'title "Sample" 'js nil "yes"))
-(repeat 3 (prn))
-(render-html (page 'title "Test" 'js "js.js" 'css "css.css" 
-                   (e 'a 'href "google.com" "mylink")
-                   (p "Hello world" (e 'em "emhasis!!!") "did you see that?")))
