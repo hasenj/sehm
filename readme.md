@@ -64,7 +64,9 @@ Where userdiv could be defined like this:
           (span 'class "email" email))))
 
 'deftag is a macro. It creates a function that automatically parses its arguments into 'attrs and 'children.
-Since 'attrs is an alist, deftag also provides 'attr as a way of retriving an attributes, and 'popattr to retrive an attribute and remove it from the alist.
+Since 'attrs is an alist, deftag also provides 'attr as a way of retriving an attributes. 
+
+It can be sometimes useful to remove or add attributes, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of 'attr val arguments and adds them as new attributes to 'attrs.
 
 This means custom tags can process custom attributes:
 
@@ -167,3 +169,6 @@ Here, we're defining a specific kind of page, which fills most things for us.
     </html>
     nil
 
+### More examples
+
+The file 'tests.arc' provides a few usage examples. The output of tests.arc simulates a command prompt so that should make it easier to read.
