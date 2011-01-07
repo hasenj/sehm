@@ -46,6 +46,11 @@
      (do1 (alref x attr)
           (pull [is (car _) attr] x)))
 
+(def alput (x args)
+     (each p (pair args) 
+        (let (k v) p
+           (when (asym k) (alpop x k) (push p x)))))
+
 (mac deftag (name . body)
      "deftag allows you to define a custom tag (in reality it's just a function)
      Whatever arguments passed to this function get parsed into attributes and children
@@ -53,11 +58,14 @@
      'attrs: attributes extracted from arguments (an alist)
      'children: child nodes, extracted from arguments
      'attr: a function to get an attirubte from 'attrs
-     'popattr: like 'attr but removes the attribute from 'attrs"
+     'popattr: like 'attr but removes the attribute from 'attrs
+     'addattr: adds a new attribute to 'attrs (persumably, before passing them to another function)"
     `(def ,name args 
        (let res (parse-attrs-nodes args)
         (with (attrs res!attrs children res!children)
-          (with (popattr [alpop attrs _] attr [alref attrs _])
+          (with (popattr [alpop attrs _] 
+                 attr [alref attrs _] 
+                 addattr (fn args (alput attrs args)))
               ,@body)))))
 
 (def deftagalias (alias name)
@@ -163,11 +171,18 @@
       (body children)))
 
 (deftag tab
-        (e 'table 'cellpadding 0 'cellspacing 0 children))
+        (addattr 'cellpadding 0 'cellspacing 0)
+        (build-tag 'table attrs children))
 
 (deftag row
-    (e 'table 'cellpadding 0 'cellspacing 0
-       (e 'tr
-                 (map [e 'td _] children))))
+    (tab (tr (map td children))))
 
+(deftag col
+    (map div children))
+
+(deftag inlinecss 
+        (e 'style 'type "text/css" children))
+
+(def k (kls . args)
+     (div 'class kls args))
 
