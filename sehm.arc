@@ -46,11 +46,31 @@
      (do1 (alref x attr)
           (pull [is (car _) attr] x)))
 
+(mac deftag (name . body)
+     "deftag allows you to define a custom tag (in reality it's just a function)
+     Whatever arguments passed to this function get parsed into attributes and children
+     The following variables are automagically defined
+     'attrs: attributes extracted from arguments (an alist)
+     'children: child nodes, extracted from arguments
+     'attr: a function to get an attirubte from 'attrs
+     'popattr: like 'attr but removes the attribute from 'attrs"
+    `(def ,name args 
+       (let res (parse-attrs-nodes args)
+        (with (attrs res!attrs children res!children)
+          (with (popattr [alpop attrs _] attr [alref attrs _])
+              ,@body)))))
+
+(def deftagalias (alias name)
+     (= alias (sym alias))
+     (eval `(deftag ,alias (build-tag ,name attrs children))))
+
 ; define basic tags as functions like this:
 ; (def div args (tag "div" args))
 (each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
-  (let tagsym (sym tagname)
-    (eval `(def ,tagsym args (tag ,tagname args)))))
+      (deftagalias tagname tagname))
+
+(each (alias name) (pair (list "section" "div" "par" "p"))
+      (deftagalias alias name))
 
 (def indent-space (level)
      (string:n-of (* 2 level) " "))
@@ -120,20 +140,6 @@
      (pr-node args)
      (prn))
 
-(mac deftag (name . body)
-     "deftag allows you to define a custom tag (in reality it's just a function)
-     Whatever arguments passed to this function get parsed into attributes and children
-     The following variables are automagically defined
-     'attrs: attributes extracted from arguments (an alist)
-     'children: child nodes, extracted from arguments
-     'attr: a function to get an attirubte from 'attrs
-     'popattr: like 'attr but removes the attribute from 'attrs"
-    `(def ,name args 
-       (let res (parse-attrs-nodes args)
-        (with (attrs res!attrs children res!children)
-          (with (popattr [alpop attrs _] attr [alref attrs _])
-              ,@body)))))
-
 (deftag items
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
@@ -145,6 +151,9 @@
 (deftag csslink
         "takes a list of css files and creates tags to include them"
         (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] children))
+
+(def link (href text)
+     (e 'a 'href href text))
 
 (deftag page
     (html

@@ -38,4 +38,4 @@
 (render-html (page 'title "Test" 'js "js.js" 'css "css.css" 
                    
                    (p "Hello world" (e 'em "emhasis!!!") "did you see that?")
-                   (p "Btw, this is" (e 'a 'href "google.com" "mylink"))))
+                   (p "Btw, this is" (link "http://google.com" "mylink"))))
