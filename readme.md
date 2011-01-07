@@ -126,11 +126,10 @@ Here, jscript and csslink are custom tags that produce the html biolerplates nec
 The point of a template is to specify the general structure of a page, while putting placeholders for things to be filled out later on. Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
 
     arc> (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
+    <!doctype html>
     <html>
       <head>
-        <title>
-          Html template
-        </title>
+        <title>Html template</title>
         <script type="text/javascript" src="first.js"></script>
         <script type="text/javascript" src="second.js"></script>
       </head>
@@ -142,6 +141,7 @@ The point of a template is to specify the general structure of a page, while put
     </html>
     nil
 
+
 The `page` template processes `js` and `css` attributes, but it's very nil-tolerant. In the above example, we didn't pass anything to `css`, and everything still worked as we expected.
 
 Because a template is nothing more than a custom tag, and because tags are defined in terms of other tags, it follows that we can create templates based on other templates.
@@ -151,18 +151,17 @@ Because a template is nothing more than a custom tag, and because tags are defin
 
 Here, we're defining a specific kind of page, which fills most things for us.
 
-    arc> (render-html (blogpage "This is my post"))
+    arc> (render-html (blogpage (p "In this post we discuss" (e "a" 'href "http://arclanguage.org" "Arc"))))
+    <!doctype html>
     <html>
       <head>
-        <title>
-          Blog post
-        </title>
+        <title>Blog post</title>
         <script type="text/javascript" src="blog.js"></script>
-        <link rel="stylesheet" type="text/css" href="blog.css"></link>
+        <link rel="stylesheet" type="text/css" href="blog.css" />
       </head>
       <body>
         <div class="blogpost">
-          This is my post
+          <p>In this post we discuss <a href="http://arclanguage.org">Arc</a></p>
         </div>
       </body>
     </html>
