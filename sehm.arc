@@ -46,10 +46,13 @@
      (do1 (alref x attr)
           (pull [is (car _) attr] x)))
 
-(def alput (x args)
-     (each p (pair args) 
+(mac alput (x args)
+  (w/uniq (p k v)
+     `(each p (pair ,args) 
         (let (k v) p
-           (when (asym k) (alpop x k) (push p x)))))
+           (when (asym k) 
+             (if (alref ,x k) (alpop ,x k))
+             (= ,x (push p ,x)))))))
 
 (mac deftag (name . body)
      "deftag allows you to define a custom tag (in reality it's just a function)
