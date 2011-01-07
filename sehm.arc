@@ -136,7 +136,7 @@
 
 (def render-html args
      "Use this to render your tag structure into html"
-     (prn "<!doctype html>")
+     ; (prn "<!doctype html>") ; not exactly ..
      (pr-node args)
      (prn))
 
