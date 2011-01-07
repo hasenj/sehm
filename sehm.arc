@@ -100,7 +100,7 @@
 (def pr-tag-normal (name attrs children)
        (pr-tag-open name attrs)
        (when children
-         (each it children 
+         (each it (flat children)
              (indent)
              (prn-indent)
              (pr-node it)
