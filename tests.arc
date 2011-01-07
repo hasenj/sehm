@@ -3,43 +3,58 @@
 (def sep ()
      (prn) (prn "-----------") (prn))
 
-(render-html
- (html
-  (head (title "Hello world"))
-  (body 
-    (div 'id "content"
-      (h1 "Main section")
-      (p "First paragraph")))))
+(mac test-html body
+     (let body (cons 'render-html body)
+     `(do 
+        (pr "arc>")
+        (write ',body)
+        (prn)
+        ,body
+        (sep))))
 
-(sep)
+(def prepend-node (node lisp)
+     (map [list node _] lisp))
 
-(render-html (items 'class "list" 'itemclass "item" 
-                       "item1" "item2"))
-(sep)
-(render-html (items "item1" "item2"))
+(mac mass-test args
+     (let newstatements (prepend-node 'test-html args)
+     `(do ,@newstatements)))
 
-(sep)
-(render-html (page 'title "Sample" "yes"))
-(sep)
-(render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
+(test-html (html "Test0"))
 
-(sep)
+(mass-test
+
+  (html "Test1")
+
+  (html "Test2")
+
+  (html
+   (head (title "Hello world"))
+   (body 
+     (div 'id "content"
+       (h1 "Main section")
+       (p "First paragraph"))))
+
+  (items 'class "list" 'itemclass "item" 
+       "item1" "item2")
+  (items "item1" "item2")
+  (page 'title "Sample" "yes")
+  (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
+
 (deftag blogpage
-        (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
-(render-html (blogpage "This is my post"))
-(sep)
-(render-html (page 'title "Sample" 'js nil "yes"))
+    (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
 
-(sep)
+(mass-test
 
-(render-html (page 'title "Test" 'js "js.js" 'css "css.css" 
-                   (e 'a 'href "google.com" "mylink")
-                   (p "Hello world" (e 'em "emhasis!!!") "did you see that?")))
-(sep)
+  (blogpage "This is my post")
+  (page 'title "Sample" 'js nil "yes")
 
-(render-html (page 'title "Test" 'js "js.js" 'css "css.css" 
-                   
-                   (p "Hello world" (e 'em "emhasis!!!") "did you see that?")
-                   (p "Btw, this is" (link "http://google.com" "mylink"))))
+  (page 'title "Test" 'js "js.js" 'css "css.css" 
+      (e 'a 'href "google.com" "mylink")
+      (p "Hello world" (e 'em "emphasis!!!") "did you see that?"))
 
-(render-html (row 1 2 3))
+  (page 'title "Test" 'js "js.js" 'css "css.css" 
+
+      (p "Hello world" (e 'em "emphasis!!!") "did you see that?")
+      (p "Btw, this is" (link "http://google.com" "mylink")))
+
+  (row 1 2 3))
