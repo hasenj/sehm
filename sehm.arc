@@ -23,7 +23,7 @@
                 (if (asym car.xs)
                     (enq (list pop.xs pop.xs) attrs)
                     (do (= children xs) (wipe xs))))
-         (obj attrs (qlist attrs) children children)))
+         (obj attrs (qlist attrs) children (flat children)))) ; we flatten children because they could contain nils, and it won't flatten the tree structure because it's not determined by lisp lists
 
 (def build-tag (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
@@ -91,14 +91,14 @@
      (if (no node) nil
          (atag node) (pr-tag node)
          (acons node) 
-             (each n (intersperse " " flat.node) ; flat to remove nils
+             (each n (intersperse " " node)
                    (pr-node n))
          t (pr node)))
 
 (def pr-tag-normal (name attrs children)
        (pr-tag-open name attrs)
        (when children
-         (each it (flat children)
+         (each it children
              (indent)
              (prn-indent)
              (pr-node it)
@@ -138,13 +138,13 @@
       (e "ul" 'class attr!class
         (map [e "il" 'class attr!itemclass _] children)))
 
-(def jscript args
+(deftag jscript
         "takes a list of js files and creates tags to include them"
-        (map [e "script" 'type "text/javascript" 'src _] (flat args)))
+        (map [e "script" 'type "text/javascript" 'src _] children))
 
-(def csslink args
+(deftag csslink
         "takes a list of css files and creates tags to include them"
-        (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] (flat args)))
+        (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] children))
 
 (deftag page
     (html
