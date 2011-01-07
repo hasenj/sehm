@@ -13,7 +13,7 @@
 
 
 (load "lib/util.arc")
-(wipe tag) ; vanilla html.arc defines this as a macro -- it gets in the way
+(wipe tag tab row) ; vanilla html.arc defines these as macros -- they gets in the way
 
 (def parse-attrs-nodes (xs)
      "Parse xs into two lists: an alist of attributes, 
@@ -66,7 +66,7 @@
 
 ; define basic tags as functions like this:
 ; (def div args (tag "div" args))
-(each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3")
+(each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3" "tr" "td")
       (deftagalias tagname tagname))
 
 (each (alias name) (pair (list "section" "div" "par" "p"))
@@ -162,6 +162,12 @@
             (csslink attr!css))
       (body children)))
 
-(deftag blogpage
-        (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
+(deftag tab
+        (e 'table 'cellpadding 0 'cellspacing 0 children))
+
+(deftag row
+    (e 'table 'cellpadding 0 'cellspacing 0
+       (e 'tr
+                 (map [e 'td _] children))))
+
 

@@ -24,6 +24,8 @@
 (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
 
 (sep)
+(deftag blogpage
+        (page 'title "Blog post" 'js "blog.js" 'css "blog.css" (div 'class "blogpost" children)))
 (render-html (blogpage "This is my post"))
 (sep)
 (render-html (page 'title "Sample" 'js nil "yes"))
@@ -39,3 +41,5 @@
                    
                    (p "Hello world" (e 'em "emhasis!!!") "did you see that?")
                    (p "Btw, this is" (link "http://google.com" "mylink"))))
+
+(render-html (row 1 2 3))
