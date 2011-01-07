@@ -1,17 +1,15 @@
 ; sehm: s-expression html markup
 ;
-; html tree nodes have attributes attached to them, to simulate that:
+; An html engine featuring:
 ;
-; (node-name 'attr value 'attr value child-node child-node child-node)
+; * composable elements
+; * custom tags
+; * layout templates
+; * html rendering decoupled from tag structure
+; * renderer does pretty printing by default
 ;
-; For example:
+; See the accompanying readme for more
 ;
-;   (div 'id "main" (span "text"))
-; 
-; A child node could be plain text or another html node
-; attribute values are mostly strings
-;
-; Attributed are designated by symbols, the rest is child nodes
 
 
 (load "lib/util.arc")
