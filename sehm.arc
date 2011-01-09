@@ -25,17 +25,14 @@
                     (do (= children xs) (wipe xs))))
          (obj attrs (qlist attrs) children (flat children)))) ; we flatten children because they could contain nils, and it won't flatten the tree structure because it's not determined by lisp lists
 
-(def build-tag (name attrs children)
+(def tag (name attrs children)
      (annotate 'tag (obj name name attrs attrs children children)))
 
 (def atag (x) (is (type x) 'tag))
 
-(def tag (name args)
-     (let res (parse-attrs-nodes args)
-       (build-tag name res!attrs res!children)))
-
 (def element (name . args)
-     (tag name args))
+     (let res (parse-attrs-nodes args)
+       (tag name res!attrs res!children)))
 
 ; convenience
 (= e element)
@@ -72,7 +69,7 @@
 
 (def deftagalias (alias name)
      (= alias (sym alias))
-     (eval `(deftag ,alias (build-tag ,name attrs children))))
+     (eval `(deftag ,alias (tag ,name attrs children))))
 
 (mac deftagc (name . body)
      "A custom tag that only runs where there is content"
@@ -179,8 +176,8 @@
       (body children)))
 
 (deftag tab
-        (addattr 'cellpadding 0 'cellspacing 0)
-        (build-tag 'table attrs children))
+    (addattr 'cellpadding 0 'cellspacing 0)
+    (tag 'table attrs children))
 
 (deftag row
     (tab (tr (map td children))))

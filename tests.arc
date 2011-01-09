@@ -23,9 +23,7 @@
 
 (mass-test
 
-  (html "Test1")
-
-  (html "Test2")
+  (title "Title Element")
 
   (html
    (head (title "Hello world"))
@@ -59,4 +57,7 @@
 
   (row 1 2 3)
   (e 'style 'type "text/css" nil)
+  (inlinecss)
+  (inlinecss " div { margin: 20px; } ")
   )
+

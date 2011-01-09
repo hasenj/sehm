@@ -66,8 +66,6 @@ Where userdiv could be defined like this:
 'deftag is a macro. It creates a function that automatically parses its arguments into 'attrs and 'children.
 Since 'attrs is an alist, deftag also provides 'attr as a way of accessing attributes using `attr!something`
 
-It can be sometimes useful to remove or add attributes to `attrs`, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of `'attr val` arguments and adds them as new attributes to 'attrs.
-
 This means custom tags can process custom attributes:
 
     (deftag items
@@ -97,15 +95,34 @@ But because everything is a regular function, you can define custom tags as simp
           (span 'class "username" username)
           (span 'class "email" email)))
 
-
 And it would work just the same.
 
 The point of deftag is that it parses the arguments passed to the function as attributes and children.
 
+It can be sometimes useful to remove or add attributes to `attrs`, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of `'attr val` arguments and adds them as new attributes to 'attrs.
+
+We can then pass `attrs` to the low level `tag` function to create 'proxy' tags that autofill common attributes.
+
+For example, a table tag with cellpadding and cellspacing set to 0 automatically:
+
+    (deftag tab
+        (addattr 'cellpadding 0 'cellspacing 0)
+        (tag 'table attrs children))
+
+This means We can supply extra attributes to the `tab` function if needed, and they will be passed on to the table tag.
+
+    arc> (render-html (tab))
+    <table cellspacing="0" cellpadding="0"></table>
+    nil
+    arc> (render-html (tab 'border 5))
+    <table cellspacing="0" cellpadding="0" border="5"></table>
+    nil
+
+As you may have noticed, the `tag` function takes 3 arguments: the tag name, an alist of attributes, and a list of children.
+
 ## Templates
 
 Custom tags can serve as layout templates. 
-
 
     (def jscript args
             "takes a list of js files and creates tags to include them"
