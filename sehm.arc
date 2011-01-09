@@ -30,7 +30,6 @@
 
 (def atag (x) (is (type x) 'tag))
 
-
 (def tag (name args)
      (let res (parse-attrs-nodes args)
        (build-tag name res!attrs res!children)))
@@ -95,10 +94,9 @@
 
 (def pr-attrs (attrs)
      ; assumes attrs is an alist
-     (each attr attrs
-        (with (key (string (attr 0)) 
-               val (string "\"" (attr 1) "\""))
-           (if (and key val) (pr " " key "=" val)))))
+     (each (k v) attrs
+         (if (and k v)
+           (pr " " k "=\"" v "\""))))
 
 (def pr-tag-open (name attrs)
      (pr "<" name)
