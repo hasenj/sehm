@@ -74,6 +74,11 @@
      (= alias (sym alias))
      (eval `(deftag ,alias (build-tag ,name attrs children))))
 
+(mac deftagc (name . body)
+     "A custom tag that only runs where there is content"
+     `(deftag ,name
+        (if children (do ,@body))))
+
 ; define basic tags as functions like this:
 ; (def div args (tag "div" args))
 (each tagname (list "div" "span" "html" "title" "head" "body" "p" "h1" "h2" "h3" "tr" "td")
@@ -168,7 +173,9 @@
     (html
       (head (title attr!title)
             (jscript attr!js)
-            (csslink attr!css))
+            (csslink attr!css)
+            (inlinecss attr!inlinecss)
+            (inlinejs attr!inlinejs))
       (body children)))
 
 (deftag tab
@@ -181,8 +188,11 @@
 (deftag col
     (map div children))
 
-(deftag inlinecss 
+(deftagc inlinecss 
         (e 'style 'type "text/css" children))
+
+(deftagc inlinejs
+        (e 'script 'type "text/javascript" children))
 
 (def k (kls . args)
      (div 'class kls args))

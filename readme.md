@@ -58,15 +58,15 @@ You could write:
 Where userdiv could be defined like this:
 
     (deftag userdiv
-      (with (username (children 0) email (children 1))
+      (let (username email) children
         (div 'class "user"
           (span 'class "username" username)
           (span 'class "email" email))))
 
 'deftag is a macro. It creates a function that automatically parses its arguments into 'attrs and 'children.
-Since 'attrs is an alist, deftag also provides 'attr as a way of retriving an attributes. 
+Since 'attrs is an alist, deftag also provides 'attr as a way of accessing attributes using `attr!something`
 
-It can be sometimes useful to remove or add attributes, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of 'attr val arguments and adds them as new attributes to 'attrs.
+It can be sometimes useful to remove or add attributes to `attrs`, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of `'attr val` arguments and adds them as new attributes to 'attrs.
 
 This means custom tags can process custom attributes:
 
@@ -74,7 +74,7 @@ This means custom tags can process custom attributes:
         (e "ul" 'class attr!class
            (map [e "li" 'class attr!itemclass _] children)))
 
-This tag produces a ul with the class specified by 'class, and applies the class specified by 'itemclass to each li element.
+This tag produces a `ul` with the class specified by 'class, and applies the class specified by 'itemclass to each `li` element.
 
     arc> (render-html (items 'class "list" 'itemclass "item" "first" "second" "third"))
     <ul class="list">
@@ -96,6 +96,7 @@ But because everything is a regular function, you can define custom tags as simp
         (div 'class "user"
           (span 'class "username" username)
           (span 'class "email" email)))
+
 
 And it would work just the same.
 
@@ -123,12 +124,17 @@ Custom tags can serve as layout templates.
 
 Here, jscript and csslink are custom tags that produce the html biolerplates necessary to include .js and .css files.
 
-`page` is a custom tag that can also be thought of as a layout template. 
+`page` is a custom tag that can also be thought of as a layout template.
 
 The point of a template is to specify the general structure of a page, while putting placeholders for things to be filled out later on. Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
 
+For example:
+
+    (title attr!title)
+
+The attribute denoted by 'title is passed to the `title` tag.
+
     arc> (render-html (page 'title "Html template" 'js '("first.js" "second.js") (div "This is my content")))
-    <!doctype html>
     <html>
       <head>
         <title>Html template</title>
@@ -143,7 +149,6 @@ The point of a template is to specify the general structure of a page, while put
     </html>
     nil
 
-
 The `page` template processes `js` and `css` attributes, but it's very nil-tolerant. In the above example, we didn't pass anything to `css`, and everything still worked as we expected.
 
 Because a template is nothing more than a custom tag, and because tags are defined in terms of other tags, it follows that we can create templates based on other templates.
@@ -154,7 +159,6 @@ Because a template is nothing more than a custom tag, and because tags are defin
 Here, we're defining a specific kind of page, which fills most things for us.
 
     arc> (render-html (blogpage (p "In this post we discuss" (e "a" 'href "http://arclanguage.org" "Arc"))))
-    <!doctype html>
     <html>
       <head>
         <title>Blog post</title>
@@ -169,6 +173,20 @@ Here, we're defining a specific kind of page, which fills most things for us.
     </html>
     nil
 
-### More examples
+## Batteries included (kinda)
+
+sehm attempts to include a number of useful custom tags.
+
+* jscript: for including a bunch of js paths
+* csslink: for including a bunch of css paths
+* inlinecss: a style tag where you can write css
+* inlinejs: a script tag with js code inside
+* row: stacks items horiztonally inside a table
+* col: stacks items vertically using divs (no tables)
+* link: takes an href and a string to create an html link.
+* page: a very simple page skeleton 
+
+## More examples
 
 The file 'tests.arc' provides a few usage examples. The output of tests.arc simulates a command prompt so that should make it easier to read.
+

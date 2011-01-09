@@ -57,4 +57,6 @@
       (p "Hello world" (e 'em "emphasis!!!") "did you see that?")
       (p "Btw, this is" (link "http://google.com" "mylink")))
 
-  (row 1 2 3))
+  (row 1 2 3)
+  (e 'style 'type "text/css" nil)
+  )
