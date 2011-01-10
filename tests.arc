@@ -60,5 +60,7 @@
   (inlinecss)
   (inlinecss " div { margin: 20px; } ")
   (hacktag (p "Hello") 'class "rtl")
+  (hacktag (p 'class "ltr" "Hello") 'class "rtl")
+  (hackattr (p 'class "one" "Hello") 'class (string it " two"))
   )
 

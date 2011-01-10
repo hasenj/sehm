@@ -37,10 +37,10 @@
 ; convenience
 (= e element)
 
-(def alpop (x attr)
+(mac alpop (x attr)
      "pop an element from an alist"
-     (do1 (alref x attr)
-          (pull [is (car _) attr] x)))
+     `(do1 (alref ,x ,attr)
+          (= ,x (pull [is (car _) ,attr] ,x))))
 
 (mac alput (x args)
   "Add extra attributes to alist 'x'"
@@ -146,10 +146,20 @@
              t (pr-tag-normal e!name e!attrs e!children)))))
 
 (def hacktag (ttag . args)
-     "Attach extra attributes to tag"
+     "Attach extra attributes to tag, returns the tag object"
      (let tag (rep ttag)
          (alput tag!attrs args)
          ttag)) ; be careful with 'alput', it's a macro with not-so-intuitive behavior
+
+(mac hackattr (ttag attrkey expr)
+     "Hack the given attribute on tag by changing it to the value retruned by 'expr'
+     This macro defines 'it' as the already existing value for the attribute, which 
+     can be used inside expr.
+     Returns the tag object"
+     (w/uniq (tagobj)
+     `(let ,tagobj ,ttag
+         (let it (alref ((rep ,tagobj) 'attrs) ,attrkey)
+           (hacktag ,tagobj ,attrkey ,expr)))))
 
 (def render-html args
      "Use this to render your tag structure into html"
