@@ -43,6 +43,7 @@
           (pull [is (car _) attr] x)))
 
 (mac alput (x args)
+  "Add extra attributes to alist 'x'"
   (w/uniq (p k v)
      `(each p (pair ,args) 
         (let (k v) p
@@ -144,6 +145,11 @@
              (in n "a" "u" "i" "em" "b" "p" "title") (pr-tag-inline e!name e!attrs e!children)
              t (pr-tag-normal e!name e!attrs e!children)))))
 
+(def hacktag (ttag . args)
+     "Attach extra attributes to tag"
+     (let tag (rep ttag)
+         (alput tag!attrs args)
+         ttag)) ; be careful with 'alput', it's a macro with not-so-intuitive behavior
 
 (def render-html args
      "Use this to render your tag structure into html"

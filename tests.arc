@@ -59,5 +59,6 @@
   (e 'style 'type "text/css" nil)
   (inlinecss)
   (inlinecss " div { margin: 20px; } ")
+  (hacktag (p "Hello") 'class "rtl")
   )
 
