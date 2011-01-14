@@ -17,17 +17,36 @@ Renders into:
       </span>
     </div>
 
+### The syntax
+
 Here, 'div is a tag function. It parses its arguments into pairs of attributes and values, followed by a list of child nodes. Attributes are specified by symbols, so there's no ambiguity.
 
     (tag 'attr val 'attr val content content content)
 
 The 'content' can be anything really, but typically it's either another node, a string, or a list of anything. It can be a list of lists, too. If a node is not a string or a tag, it will be output according to how 'pr prints it. If a node is nil, it's ignored.
 
-Attributes values can also be anything, but typically they're strings. Attribute names *must* be symbols: that's how we know they are attributes. If the value passed to the attribute is nil, the attribute is ignored.
+The content will be eventually normalized so that nils are removed, and lists of lists flattened.
 
-There are no macros involved here. 'div is a function, and the arguments passed to it are parsed by a function.
+So that:
+   
+    (div "a" "b" "c")
 
-'div and other tag functions don't return a string. Instead, they return a tag/node object, which is just an annotated hashtable with the following fields:
+doesn't behave any different from:
+
+    (div (list "a" "b" "c"))
+
+The flattening doesn't actually affect the html tree hierarchy.
+
+You can generate lists and include them as content:
+
+    (div 'id "userlist" 
+        (map [span _!username] user-list*))
+
+Attributes values can be anything, but typically they're strings. Attribute names *must* be symbols: that's how we know they are attributes. If the value passed to the attribute is nil, the attribute is ignored.
+
+It should be noted that the syntax above doesn't rely on macros. 'div is actually a function, and the arguments passed to it are parsed by a function.
+
+'div and other tag functions don't return a string. Instead, they return a tag object (a node in the html tree), which is just an annotated hashtable with the following fields:
 
 * name: the tag name, e.g. "div"
 * attrs: an associated list of attributes
@@ -40,6 +59,15 @@ To capture the output as a string, use `tostring:render-html`
 `div` and `span` are convenience methods. Not all tags have methods defined in their names. To produce a generic tag, use the `element` function (or `e` for short):
 
     (e "div" 'class "myclass" "content" "content")
+
+You can define a tag alias using the `deftagalias` macro:
+
+    (deftagalias "section" "div")
+
+Now you can use "section" as if it was "div":
+
+    (section 'class "comments" 
+        "Comments will be loaded here")
 
 ## Custom tags
 
@@ -74,7 +102,9 @@ This means custom tags can process custom attributes:
 
 This tag produces a `ul` with the class specified by 'class, and applies the class specified by 'itemclass to each `li` element.
 
-    arc> (render-html (items 'class "list" 'itemclass "item" "first" "second" "third"))
+    arc> (render-html 
+            (items 'class "list" 'itemclass "item" 
+                "first" "second" "third"))
     <ul class="list">
       <li class="item">
         first
@@ -97,7 +127,7 @@ But because everything is a regular function, you can define custom tags as simp
 
 And it would work just the same.
 
-The point of deftag is that it parses the arguments passed to the function as attributes and children.
+The point of deftag is that it parses the arguments passed to the function as attributes and children. It also normalizes the 'children' list as discussed above.
 
 It can be sometimes useful to remove or add attributes to `attrs`, so 'deftag defines 'popattr to retrive an attribute and remove it from 'attrs, and 'addattr which accepts any number of `'attr val` arguments and adds them as new attributes to 'attrs.
 
@@ -120,17 +150,39 @@ This means We can supply extra attributes to the `tab` function if needed, and t
 
 As you may have noticed, the `tag` function takes 3 arguments: the tag name, an alist of attributes, and a list of children.
 
+Normalizing the 'children' list can actually be very useful, it allows us to just assume that 'children' is a flat list without caring about how it was generated.
+
+For example, consider:
+
+    (deftag jscript
+            (map [e "script" 'type "text/javascript" 'src _] children))
+
+Here, jscript takes a list of paths to .js files and renders the html boilerplate necessary to "import" them.
+
+We can use it like this:
+
+    (jscript "jquery.js" "comments.js" "coffee.js")
+
+Or like this:
+
+    (jscript (get-js-files))
+
+And in both cases it would work in the same way.
+
+If `get-js-files` returns an empty list, it will be as if you called `jscript` with no arguments:
+
+    (jscript)
+
+Which wouldn't do anything.
+
+We can define a similar tag for css files:
+
+    (deftag csslink
+            (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] children))
+
 ## Templates
 
-Custom tags can serve as layout templates. 
-
-    (def jscript args
-            "takes a list of js files and creates tags to include them"
-            (map [e "script" 'type "text/javascript" 'src _] (flat args)))
-
-    (def csslink args
-            "takes a list of css files and creates tags to include them"
-            (map [e "link" 'rel "stylesheet" 'type "text/css" 'href _] (flat args)))
+Because there are no artifical restriction on attributes, custom tags can serve as layout templates, with attributes serving as placeholders:
 
     (deftag page
         (html
@@ -139,13 +191,13 @@ Custom tags can serve as layout templates.
                 (csslink attr!css))
           (body children)))
 
-Here, jscript and csslink are custom tags that produce the html biolerplates necessary to include .js and .css files.
-
 `page` is a custom tag that can also be thought of as a layout template.
 
-The point of a template is to specify the general structure of a page, while putting placeholders for things to be filled out later on. Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
+The point of a template is to specify the general structure of a page, while putting placeholders for things to be filled out later on. 
 
-For example:
+Because custom tags can process custom attributes, these attributes can be used to specify placeholders for templates.
+
+For example, if we look at this expression inside the `page` template:
 
     (title attr!title)
 
