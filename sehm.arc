@@ -141,7 +141,7 @@
 (def pr-tag (tag)
      (let e (rep tag)
        (let n (string e!name)
-         (if (in n "link" "img" "input") (pr-tag-selfclose e!name e!attrs)
+         (if (in n "link" "meta" "img" "input") (pr-tag-selfclose e!name e!attrs)
              (in n "a" "u" "i" "em" "b" "p" "title") (pr-tag-inline e!name e!attrs e!children)
              t (pr-tag-normal e!name e!attrs e!children)))))
 
